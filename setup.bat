@@ -1,43 +1,49 @@
 @echo off
-chcp 65001 > nul
+cd /d "%~dp0"
+
 echo ============================================
-echo   Тактична ГІС - Встановлення залежностей
+echo   TacGIS - Installing dependencies...
 echo ============================================
 echo.
 
-echo [1/4] Створення віртуального середовища...
-python -m venv venv
+echo [1/4] Creating virtual environment...
+py -m venv venv
 if errorlevel 1 (
-    echo ПОМИЛКА: Не вдалося створити venv. Переконайтеся що Python встановлено.
-    pause
-    exit /b 1
+    python -m venv venv
+    if errorlevel 1 (
+        echo ERROR: Python not found. Install Python 3.13 from python.org
+        pause
+        exit /b 1
+    )
 )
+echo   OK
 
-echo [2/4] Активація середовища та встановлення пакетів...
+echo [2/4] Installing packages (this takes 3-5 minutes)...
 call venv\Scripts\activate.bat
-pip install --upgrade pip
+py -m pip install --upgrade pip --quiet
 pip install -r requirements.txt
 if errorlevel 1 (
-    echo ПОМИЛКА: Не вдалося встановити залежності.
+    echo ERROR: Failed to install packages.
     pause
     exit /b 1
 )
+echo   OK
 
-echo [3/4] Створення директорій для даних...
+echo [3/4] Creating data directories...
 if not exist "data" mkdir data
 if not exist "data\tiles" mkdir data\tiles
+echo   OK
 
-echo [4/4] Перевірка встановлення...
-python -c "import PyQt6; import PyQt6.QtWebEngineWidgets; import pyproj; import simplekml; import reportlab; print('OK')"
+echo [4/4] Checking installation...
+python -c "import PyQt6; import pyproj; print('All packages OK')"
 if errorlevel 1 (
-    echo ПОПЕРЕДЖЕННЯ: Деякі пакети можуть бути недоступні.
+    echo WARNING: Some packages may be missing.
 ) else (
-    echo Всі пакети встановлено успішно!
+    echo   OK
 )
 
 echo.
 echo ============================================
-echo   Встановлення завершено успішно!
-echo   Запустіть додаток: python main.py
+echo   Setup complete! Run the app: run.bat
 echo ============================================
 pause
